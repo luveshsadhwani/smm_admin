@@ -8,16 +8,18 @@
     <title>SMM Admin</title>
   </head>
   <body>
-    <div class="top-bar" id="top-bar">smm_admin</div>
-    <div class="login-container">
+    <div class="top-bar" id="top-bar"><div>smm_admin</div></div>
+    <div class="login-container" id="login">
       <span class="login-text">Login</span>
-      <div class="input-container" id="email"><input class="input" /></div>
-      <div class="input-container" id="password">
-        <input class="input" type="password" />
+      <div class="input-container"><input class="input" id="email" /></div>
+      <div class="input-container">
+        <input class="input" id="password" type="password" />
       </div>
       <div class="btn-container">
-        <button type="submit" class="btn">Submit</button>
+        <button type="submit" class="btn" id="submit-btn">Submit</button>
       </div>
     </div>
   </body>
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <script src="login.js"></script>
 </html>

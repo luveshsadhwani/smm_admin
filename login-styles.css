@@ -1,0 +1,62 @@
+* {
+  margin: 0;
+  padding: 0;
+  outline: none !important;
+  overflow: hidden;
+}
+
+.top-bar {
+  background-color: #2f5375;
+  color: white;
+  font-size: 18px;
+  height: 5vh;
+  padding-top: 10px;
+  margin: 0;
+  padding-left: 10px;
+  width: 100%;
+}
+
+body {
+  background-color: #002242;
+  height: 100vh;
+}
+
+.login-container {
+  background-color: #2f5375;
+  margin: auto;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  width: 200px;
+  height: 200px;
+}
+
+.login-text {
+  color: white;
+  font-size: 24px;
+  font-weight: bold;
+  text-decoration: underline;
+  padding-left: 20px;
+  position: relative;
+  top: 16px;
+}
+
+.input-container#email {
+  margin-top: 24px;
+}
+
+.input-container,
+.btn-container {
+  padding: 20px 20px 0px 20px;
+}
+
+.input {
+  width: 158px;
+}
+
+.btn {
+  width: 80px;
+  margin-left: 40px;
+}

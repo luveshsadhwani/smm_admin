@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="itemspage-styles.css" />
+    <title>SMM Admin</title>
+  </head>
+  <body>
+    <div id="modal" class="modal">
+      <div id="modal-content" class="modal-content"></div>
+    </div>
+    <div class="top-bar" id="top-bar"><div>smm_admin</div></div>
+    <div class="page-title">SMM Item List</div>
+    <div class="item-table">
+      <table id="items-table">
+        <tr>
+          <th>#</th>
+          <th>Barcode</th>
+          <th>Name</th>
+          <th>Verified</th>
+          <th>Actions</th>
+        </tr>
+      </table>
+    </div>
+  </body>
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <script src="itempage.js"></script>
+</html>

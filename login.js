@@ -13,30 +13,6 @@ const clearError = () => {
   }
 };
 
-const clearLoginStatus = () => {
-  const loginStatusEl = document.getElementsByClassName(
-    "top-bar-login-status"
-  )[0];
-
-  if (loginStatusEl) {
-    topBarDiv.removeChild(loginStatusEl);
-  }
-};
-
-const setLoginStatus = (name) => {
-  // check if div exists before creating a new one
-  clearLoginStatus();
-
-  const loginStatusMsg = `Logged in as ${name}`;
-
-  const loginStatusEl = document.createElement("div");
-  loginStatusEl.className = "top-bar-login-status";
-  const statusMsgNode = document.createTextNode(loginStatusMsg);
-  loginStatusEl.appendChild(statusMsgNode);
-
-  topBarDiv.appendChild(loginStatusEl);
-};
-
 const setError = (message) => {
   // check if div exists before creating a new one
   clearError();
@@ -101,7 +77,9 @@ const handleSubmit = async (e) => {
   if (status === 200) {
     const { token, name } = data.data;
     saveJwtToStorage(token);
-    setLoginStatus(name);
+
+    // redirect to item page html
+    location.href = "itempage.html";
   }
 
   // handle unauthenticated user

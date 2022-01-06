@@ -17,9 +17,9 @@
 }
 
 .top-bar-login-status {
-  color: #ffdbb9;
   font-size: 10px;
   padding-top: 5px;
+  width: 150px;
 }
 
 body {
@@ -99,12 +99,12 @@ td {
   background-color: white;
   width: 50px;
   font-weight: bold;
-  color: #002242
+  color: #002242;
 }
 
 .verify-btn {
-  background-color: #F77800;
+  background-color: #f77800;
   width: 50px;
   font-weight: bold;
-  color: #2f5375
+  color: #2f5375;
 }

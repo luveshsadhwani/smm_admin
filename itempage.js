@@ -5,7 +5,7 @@ const itemsTable = document.getElementById("items-table");
 
 window.onload = async () => {
   const items = await fetchItems();
-  setLoginStatus();
+  fetchUser();
   if (items) {
     renderRowsFromItems(items);
   }
@@ -25,40 +25,45 @@ const clearLoginStatus = () => {
   }
 };
 
-const setLoginStatus = async () => {
+const setLoginStatus = (message, type) => {
   // check if div exists before creating a new one
   clearLoginStatus();
 
-  const name = await fetchUserName();
-
-  const loginStatusMsg = `Logged in as ${name}`;
-
   const loginStatusEl = document.createElement("div");
   loginStatusEl.className = "top-bar-login-status";
-  const statusMsgNode = document.createTextNode(loginStatusMsg);
-  loginStatusEl.appendChild(statusMsgNode);
+  const statusMsgNode = document.createTextNode(message);
 
-  topBarDiv.appendChild(loginStatusEl);
+  if (type === "success") {
+    loginStatusEl.style.color = "#ffdbb9";
+    const statusMsgNode = document.createTextNode(message);
+    loginStatusEl.appendChild(statusMsgNode);
+    topBarDiv.appendChild(loginStatusEl);
+  } else {
+    loginStatusEl.style.backgroundColor = "#f77800";
+    const loginLink = document.createElement("a");
+    loginLink.href = '/login.html'
+    loginLink.appendChild(statusMsgNode);
+    loginStatusEl.appendChild(loginLink);
+    topBarDiv.appendChild(loginStatusEl);
+  }
 };
 
 const clearFetchStatus = () => {
   modal.style.display = "none";
 };
 
-const setFetchStatus = (status) => {
+const setFetchStatus = (message, type) => {
   // check if div exists before creating a new one
   clearFetchStatus();
   modal.style.display = "block";
 
-  if (status === 200) {
+  if (type === "success") {
     modalContent.style.color = "#14eb6b";
-    const fetchStatusMsg = `Items fetched successfully`;
-    const statusMsgNode = document.createTextNode(fetchStatusMsg);
+    const statusMsgNode = document.createTextNode(message);
     modalContent.appendChild(statusMsgNode);
   } else {
     modalContent.style.color = "red";
-    const fetchStatusMsg = `Error in fetching items`;
-    const statusMsgNode = document.createTextNode(fetchStatusMsg);
+    const statusMsgNode = document.createTextNode(message);
     modalContent.appendChild(statusMsgNode);
   }
 
@@ -78,17 +83,26 @@ const fetchItems = () => {
     },
   })
     .then((response) => {
-      if (response.data.success) {
-        const { status, data } = response;
-        setFetchStatus(status);
+      let responseMsg = "";
+      if (response.status === 200) {
+        const { data } = response;
+        responseMsg = "Items fetched successfully";
+        setFetchStatus(responseMsg, "success");
         const { data: items } = data;
         return items;
       }
     })
-    .catch((error) => console.log(error));
+    .catch((error) => {
+      let responseMsg = "";
+      if (!error.response) {
+        // network error
+        responseMsg = "Error: Network Error";
+        setFetchStatus(responseMsg, "error");
+      }
+    });
 };
 
-const fetchUserName = async () => {
+const fetchUser = async () => {
   const token = getJwtToStorage();
 
   const response = await axios({
@@ -99,11 +113,23 @@ const fetchUserName = async () => {
       "Access-Control-Allow-Origin": "*",
       Authorization: `Bearer ${token}`,
     },
-  });
-
-  const { first_name, last_name } = response.data;
-
-  return `${first_name} ${last_name}`;
+  })
+    .then((response) => {
+      let responseMsg = "";
+      if (response.status === 200) {
+        const { first_name, last_name } = response.data;
+        responseMsg = `Logged in as ${first_name} ${last_name}`;
+        setLoginStatus(responseMsg, "success");
+      }
+    })
+    .catch((error) => {
+      let responseMsg = "";
+      if (!error.response) {
+        // network error
+        responseMsg = `Not Logged in! Click here to login.`;
+        setLoginStatus(responseMsg, "error");
+      }
+    });
 };
 
 const formatUserDefined = (userDefinedType) => (userDefinedType ? "No" : "Yes");

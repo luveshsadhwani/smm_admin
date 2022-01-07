@@ -7,7 +7,8 @@ const itemsTable = document.getElementById("items-table");
 const editItemBarcodeInput = document.getElementById("barcode");
 const editItemNameInput = document.getElementById("name");
 
-const editItemButton = document.getElementById("edit-item-btn");
+const modalTitleEl = document.getElementById("modal-action-title");
+const modalActionBtn = document.getElementById("modal-action-btn");
 
 window.onload = async () => {
   const items = await fetchItems();
@@ -175,9 +176,17 @@ const fetchItem = (itemId) => {
 
 const closeModal = () => {
   modalPopup.style.display = "none";
+  modalActionBtn.setAttribute("disabled", false);
+  editItemBarcodeInput.removeAttribute("disabled");
+  editItemNameInput.removeAttribute("disabled");
+  editItemNameInput.value = "";
+  editItemBarcodeInput.value = "";
+
+  modalTitleEl.textContent = "";
+  modalActionBtn.textContent = "";
 };
 
-const openEditModal = async (itemId) => {
+const openModal = async (itemId, action) => {
   modalPopup.style.display = "block";
 
   // fetch item
@@ -185,8 +194,25 @@ const openEditModal = async (itemId) => {
   // display in the input
   editItemBarcodeInput.value = item.barcode;
   editItemNameInput.value = item.name;
-  editItemButton.setAttribute("onclick", `handleEditItem(${item.id})`);
 
+  let btnTextNode = "";
+  let titleTextNode = "";
+  if (action === "edit") {
+    titleTextNode = document.createTextNode("Edit Item");
+    btnTextNode = document.createTextNode("Edit");
+    modalActionBtn.setAttribute("onclick", `handleEditItem(${item.id})`);
+  }
+
+  if (action === "verify") {
+    titleTextNode = document.createTextNode("Verify Item");
+    btnTextNode = document.createTextNode("Verify");
+    modalActionBtn.setAttribute("onclick", `handleVerifyItem(${item.id})`);
+    editItemBarcodeInput.setAttribute("disabled", true);
+    editItemNameInput.setAttribute("disabled", true);
+  }
+
+  modalTitleEl.appendChild(titleTextNode);
+  modalActionBtn.appendChild(btnTextNode);
 };
 
 const handleEditItem = (itemId) => {
@@ -207,7 +233,7 @@ const handleEditItem = (itemId) => {
     name: itemName,
   };
 
-  editItemButton.setAttribute("disabled", true);
+  modalActionBtn.setAttribute("disabled", true);
   axios({
     method: "put",
     url: `http://127.0.0.1:8000/api/items/update/${itemId}`,
@@ -233,11 +259,6 @@ const handleEditItem = (itemId) => {
         responseMsg = `Error: Network Error`;
         setLoginStatus(responseMsg, "error");
       }
-    })
-    .finally(() => {
-      editItemButton.setAttribute("disabled", false);
-      editItemNameInput.value = "";
-      editItemBarcodeInput.value = "";
     });
 };
 
@@ -252,7 +273,7 @@ const renderEditBtn = (tableCell, itemId) => {
 
   btnEl.setAttribute("style", "margin-left:10px;");
   btnEl.setAttribute("class", "edit-btn");
-  btnEl.setAttribute("onclick", `openEditModal(${itemId})`);
+  btnEl.setAttribute("onclick", `openModal(${itemId}, "edit")`);
 
   tableCell.appendChild(btnEl);
 };
@@ -264,7 +285,7 @@ const renderVerifyBtn = (tableCell, itemId) => {
 
   btnEl.setAttribute("style", "margin-left:10px;");
   btnEl.setAttribute("class", "verify-btn");
-  btnEl.setAttribute("onclick", `verifyItem(${itemId})`);
+  btnEl.setAttribute("onclick", `openModal(${itemId}, "verify")`);
 
   tableCell.appendChild(btnEl);
 };
@@ -305,6 +326,6 @@ const renderRowsFromItems = (items) => {
 // When the user clicks anywhere outside of the modal, close it
 window.onclick = function (event) {
   if (event.target == modalPopup) {
-    modalPopup.style.display = "none";
+    closeModal();
   }
 };

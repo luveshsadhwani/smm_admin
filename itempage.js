@@ -1,7 +1,13 @@
 const topBarDiv = document.getElementById("top-bar");
 const modal = document.getElementById("modal");
+const modalPopup = document.getElementById("modal-popup");
 const modalContent = document.getElementById("modal-content");
 const itemsTable = document.getElementById("items-table");
+
+const editItemBarcodeInput = document.getElementById("barcode");
+const editItemNameInput = document.getElementById("name");
+
+const editItemButton = document.getElementById("edit-item-btn");
 
 window.onload = async () => {
   const items = await fetchItems();
@@ -41,7 +47,7 @@ const setLoginStatus = (message, type) => {
   } else {
     loginStatusEl.style.backgroundColor = "#f77800";
     const loginLink = document.createElement("a");
-    loginLink.href = '/login.html'
+    loginLink.href = "/login.html";
     loginLink.appendChild(statusMsgNode);
     loginStatusEl.appendChild(loginLink);
     topBarDiv.appendChild(loginStatusEl);
@@ -50,6 +56,7 @@ const setLoginStatus = (message, type) => {
 
 const clearFetchStatus = () => {
   modal.style.display = "none";
+  modalContent.textContent = "";
 };
 
 const setFetchStatus = (message, type) => {
@@ -134,41 +141,137 @@ const fetchUser = async () => {
 
 const formatUserDefined = (userDefinedType) => (userDefinedType ? "No" : "Yes");
 
-const editItem = () => {
-  console.log("editting...");
+const fetchItem = (itemId) => {
+  const token = getJwtToStorage();
+
+  return axios({
+    method: "get",
+    url: `http://127.0.0.1:8000/api/items/${itemId}`,
+    headers: {
+      Accept: "application/json",
+      "Access-Control-Allow-Origin": "*",
+      Authorization: `Bearer ${token}`,
+    },
+  })
+    .then((response) => {
+      let responseMsg = "";
+      if (response.status === 200) {
+        const { data } = response;
+        responseMsg = "Item fetched successfully";
+        setFetchStatus(responseMsg, "success");
+        const { data: item } = data;
+        return item;
+      }
+    })
+    .catch((error) => {
+      let responseMsg = "";
+      if (!error.response) {
+        // network error
+        responseMsg = "Error: Network Error";
+        setFetchStatus(responseMsg, "error");
+      }
+    });
+};
+
+const closeModal = () => {
+  modalPopup.style.display = "none";
+};
+
+const openEditModal = async (itemId) => {
+  modalPopup.style.display = "block";
+
+  // fetch item
+  const item = await fetchItem(itemId);
+  // display in the input
+  editItemBarcodeInput.value = item.barcode;
+  editItemNameInput.value = item.name;
+  editItemButton.setAttribute("onclick", `handleEditItem(${item.id})`);
+
+};
+
+const handleEditItem = (itemId) => {
+  if (!itemId) return;
+  // validate data
+  const itemBarcode = editItemBarcodeInput.value;
+  const itemName = editItemNameInput.value;
+
+  if (!itemBarcode || !itemName) {
+    setFetchStatus("Please fill in item name and barcode", "error");
+    return;
+  }
+
+  const token = getJwtToStorage();
+
+  const postData = {
+    barcode: itemBarcode,
+    name: itemName,
+  };
+
+  editItemButton.setAttribute("disabled", true);
+  axios({
+    method: "put",
+    url: `http://127.0.0.1:8000/api/items/update/${itemId}`,
+    data: postData,
+    headers: {
+      Accept: "application/json",
+      "Access-Control-Allow-Origin": "*",
+      Authorization: `Bearer ${token}`,
+    },
+  })
+    .then((response) => {
+      //handle success
+      closeModal();
+      const { message } = response.data;
+      setFetchStatus(message, "success");
+      setTimeout(() => location.reload(), 1500);
+    })
+    .catch((error) => {
+      //handle error
+      let responseMsg = "";
+      if (!error.response) {
+        // network error
+        responseMsg = `Error: Network Error`;
+        setLoginStatus(responseMsg, "error");
+      }
+    })
+    .finally(() => {
+      editItemButton.setAttribute("disabled", false);
+      editItemNameInput.value = "";
+      editItemBarcodeInput.value = "";
+    });
 };
 
 const verifyItem = () => {
   console.log("verifying...");
 };
 
-const renderEditBtn = (tableCell) => {
+const renderEditBtn = (tableCell, itemId) => {
   const btnEl = document.createElement("button");
   const btnTextNode = document.createTextNode("Edit");
   btnEl.appendChild(btnTextNode);
 
   btnEl.setAttribute("style", "margin-left:10px;");
   btnEl.setAttribute("class", "edit-btn");
-  btnEl.setAttribute("onclick", "editItem()");
+  btnEl.setAttribute("onclick", `openEditModal(${itemId})`);
 
   tableCell.appendChild(btnEl);
 };
 
-const renderVerifyBtn = (tableCell) => {
+const renderVerifyBtn = (tableCell, itemId) => {
   const btnEl = document.createElement("button");
   const btnTextNode = document.createTextNode("Verify");
   btnEl.appendChild(btnTextNode);
 
   btnEl.setAttribute("style", "margin-left:10px;");
   btnEl.setAttribute("class", "verify-btn");
-  btnEl.setAttribute("onclick", "verifyItem()");
+  btnEl.setAttribute("onclick", `verifyItem(${itemId})`);
 
   tableCell.appendChild(btnEl);
 };
 
 const renderRowsFromItems = (items) => {
   for (let i = 0; i < items.length; i++) {
-    const { barcode, name, user_defined } = items[i];
+    const { barcode, name, user_defined, id } = items[i];
     var row = itemsTable.insertRow(i + 1);
 
     const idCol = row.insertCell(0);
@@ -188,13 +291,20 @@ const renderRowsFromItems = (items) => {
     barcodeCol.appendChild(barcodeTextNode);
     nameCol.appendChild(nameTextNode);
     verifiedCol.appendChild(verifiedTextNode);
-    renderEditBtn(actionsCol);
+    renderEditBtn(actionsCol, id);
 
     if (user_defined) {
       verifiedCol.setAttribute("class", "unverified");
-      renderVerifyBtn(actionsCol);
+      renderVerifyBtn(actionsCol, id);
     } else {
       verifiedCol.setAttribute("class", "verified");
     }
+  }
+};
+
+// When the user clicks anywhere outside of the modal, close it
+window.onclick = function (event) {
+  if (event.target == modalPopup) {
+    modalPopup.style.display = "none";
   }
 };

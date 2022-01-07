@@ -66,6 +66,42 @@ body {
   font-weight: bold;
 }
 
+.modal-edit {
+  background-color: #fefefe;
+  margin: 100px 15px; /* 15% from the top and centered */
+  padding: 20px;
+  width: 50%; /* Could be more or less, depending on screen size */
+}
+
+/* The Modal (background) */
+.modal-popup {
+  display: none; /* Hidden by default */
+  position: fixed; /* Stay in place */
+  z-index: 1; /* Sit on top */
+  left: 0;
+  top: 0;
+  width: 100%; /* Full width */
+  height: 100%; /* Full height */
+  overflow: auto; /* Enable scroll if needed */
+  text-align: center;
+  background-color: rgba(0, 0, 0, 0.4); /* Black w/ opacity */
+}
+
+.input-container {
+  padding: 10px 0px;
+}
+
+.input-container #name {
+  width: 300px;
+}
+
+.edit-item-btn {
+  width: 50px;
+  margin-top: 10px;
+  color: white;
+  background-color: #f77800;
+}
+
 table {
   table-layout: fixed;
   width: 200px;

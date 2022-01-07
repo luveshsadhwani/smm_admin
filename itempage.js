@@ -176,7 +176,7 @@ const fetchItem = (itemId) => {
 
 const closeModal = () => {
   modalPopup.style.display = "none";
-  modalActionBtn.setAttribute("disabled", false);
+  modalActionBtn.removeAttribute("disabled");
   editItemBarcodeInput.removeAttribute("disabled");
   editItemNameInput.removeAttribute("disabled");
   editItemNameInput.value = "";

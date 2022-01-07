@@ -262,8 +262,37 @@ const handleEditItem = (itemId) => {
     });
 };
 
-const verifyItem = () => {
-  console.log("verifying...");
+const handleVerifyItem = (itemId) => {
+  if (!itemId) return;
+
+  const token = getJwtToStorage();
+
+  modalActionBtn.setAttribute("disabled", true);
+  axios({
+    method: "put",
+    url: `http://127.0.0.1:8000/api/items/verify/${itemId}`,
+    headers: {
+      Accept: "application/json",
+      "Access-Control-Allow-Origin": "*",
+      Authorization: `Bearer ${token}`,
+    },
+  })
+    .then((response) => {
+      //handle success
+      closeModal();
+      const { message } = response.data;
+      setFetchStatus(message, "success");
+      setTimeout(() => location.reload(), 1500);
+    })
+    .catch((error) => {
+      //handle error
+      let responseMsg = "";
+      if (!error.response) {
+        // network error
+        responseMsg = `Error: Network Error`;
+        setLoginStatus(responseMsg, "error");
+      }
+    });
 };
 
 const renderEditBtn = (tableCell, itemId) => {

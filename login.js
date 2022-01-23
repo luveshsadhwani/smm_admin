@@ -45,10 +45,34 @@ const validateInput = () => {
   return true;
 };
 
+const disableButtonEl = (buttonEl) => {
+    if (!buttonEl) return
+    
+    try {
+        if (buttonEl.nodeName !== 'BUTTON') {
+            throw new TypeError("Element is not type button");
+        }
+        buttonEl.disabled = true;
+    } catch (e) {
+        console.log(e);
+    }
+}
+
+const enableButtonEl = (buttonEl) => {
+    if (!buttonEl) return
+    
+    try {
+        if (buttonEl.nodeName !== 'BUTTON') { throw new TypeError ("Element is not type button");
+        }
+        buttonEl.disabled = false;
+    } catch (e) {
+        console.log(e);
+    }
+}
+
 const handleSubmit = async (e) => {
   e.preventDefault();
-
-  btnEl.setAttribute("disabled", true);
+  disableButtonEl(btnEl);
 
   const email = emailInput.value;
   const password = passwordInput.value;
@@ -56,7 +80,7 @@ const handleSubmit = async (e) => {
   const isValid = validateInput();
 
   if (!isValid) {
-    btnEl.removeAttribute("disabled");
+    enableButtonEl(btnEl);
     return;
   }
 
@@ -88,7 +112,7 @@ const handleSubmit = async (e) => {
   }
 
   resetInput();
-  btnEl.removeAttribute("disabled");
+  enableButtonEl(btnEl);
 };
 
 btnEl.addEventListener("click", handleSubmit);

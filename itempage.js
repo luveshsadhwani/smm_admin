@@ -18,7 +18,7 @@ window.onload = async () => {
   }
 };
 
-const getJwtToStorage = () => {
+const getJwtFromStorage = () => {
   return localStorage.getItem("token");
 };
 
@@ -226,7 +226,7 @@ const handleEditItem = (itemId) => {
     return;
   }
 
-  const token = getJwtToStorage();
+  const token = getJwtFromStorage();
 
   const postData = {
     barcode: itemBarcode,
@@ -265,7 +265,7 @@ const handleEditItem = (itemId) => {
 const handleVerifyItem = (itemId) => {
   if (!itemId) return;
 
-  const token = getJwtToStorage();
+  const token = getJwtFromStorage();
 
   modalActionBtn.setAttribute("disabled", true);
   axios({

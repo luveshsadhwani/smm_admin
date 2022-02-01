@@ -46,29 +46,30 @@ const validateInput = () => {
 };
 
 const disableButtonEl = (buttonEl) => {
-    if (!buttonEl) return
-    
-    try {
-        if (buttonEl.nodeName !== 'BUTTON') {
-            throw new TypeError("Element is not type button");
-        }
-        buttonEl.disabled = true;
-    } catch (e) {
-        console.log(e);
+  if (!buttonEl) return;
+
+  try {
+    if (buttonEl.nodeName !== "BUTTON") {
+      throw new TypeError("Element is not type button");
     }
-}
+    buttonEl.disabled = true;
+  } catch (e) {
+    console.log(e);
+  }
+};
 
 const enableButtonEl = (buttonEl) => {
-    if (!buttonEl) return
-    
-    try {
-        if (buttonEl.nodeName !== 'BUTTON') { throw new TypeError ("Element is not type button");
-        }
-        buttonEl.disabled = false;
-    } catch (e) {
-        console.log(e);
+  if (!buttonEl) return;
+
+  try {
+    if (buttonEl.nodeName !== "BUTTON") {
+      throw new TypeError("Element is not type button");
     }
-}
+    buttonEl.disabled = false;
+  } catch (e) {
+    console.log(e);
+  }
+};
 
 const handleSubmit = async (e) => {
   e.preventDefault();

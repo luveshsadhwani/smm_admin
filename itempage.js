@@ -1,3 +1,5 @@
+import ApiService from "./ApiService.js";
+
 const topBarDiv = document.getElementById("top-bar");
 const modal = document.getElementById("modal");
 const modalPopup = document.getElementById("modal-popup");
@@ -78,100 +80,99 @@ const setFetchStatus = (message, type) => {
   setTimeout(clearFetchStatus, 1000);
 };
 
-const fetchItems = () => {
-  const token = getJwtToStorage();
+const fetchItems = async () => {
+  const token = getJwtFromStorage();
+  const getData = {};
 
-  return axios({
-    method: "get",
-    url: "http://127.0.0.1:8000/api/items",
-    headers: {
-      Accept: "application/json",
-      "Access-Control-Allow-Origin": "*",
-      Authorization: `Bearer ${token}`,
-    },
-  })
-    .then((response) => {
-      let responseMsg = "";
-      if (response.status === 200) {
-        const { data } = response;
-        responseMsg = "Items fetched successfully";
-        setFetchStatus(responseMsg, "success");
-        const { data: items } = data;
-        return items;
-      }
-    })
-    .catch((error) => {
-      let responseMsg = "";
-      if (!error.response) {
-        // network error
-        responseMsg = "Error: Network Error";
-        setFetchStatus(responseMsg, "error");
-      }
-    });
+  const { status, responseData } = await ApiService.getApi(
+    "/items",
+    getData,
+    token
+  );
+
+  let responseMsg = "";
+  if (status === 0) {
+    responseMsg = "Error: Network Error";
+    setFetchStatus(responseMsg, "error");
+  }
+
+  if (status === 401) {
+    responseMsg = "Unauthenticated user. Please log in";
+    setFetchStatus(responseMsg, "error");
+  }
+
+  if (status === 403) {
+    responseMsg = "Unauthorized user, access not allowed";
+    setFetchStatus(responseMsg, "error");
+    location.href = "login.html";
+  }
+
+  if (status === 200) {
+    const { data: items, message } = responseData;
+    setFetchStatus(message, "success");
+    return items;
+  }
 };
 
 const fetchUser = async () => {
-  const token = getJwtToStorage();
+  const token = getJwtFromStorage();
+  const getData = {};
 
-  const response = await axios({
-    method: "get",
-    url: "http://127.0.0.1:8000/api/user",
-    headers: {
-      Accept: "application/json",
-      "Access-Control-Allow-Origin": "*",
-      Authorization: `Bearer ${token}`,
-    },
-  })
-    .then((response) => {
-      let responseMsg = "";
-      if (response.status === 200) {
-        const { first_name, last_name } = response.data;
-        responseMsg = `Logged in as ${first_name} ${last_name}`;
-        setLoginStatus(responseMsg, "success");
-      }
-    })
-    .catch((error) => {
-      let responseMsg = "";
-      if (!error.response) {
-        // network error
-        responseMsg = `Not Logged in! Click here to login.`;
-        setLoginStatus(responseMsg, "error");
-      }
-    });
+  const { status, responseData } = await ApiService.getApi(
+    "/user",
+    getData,
+    token
+  );
+
+  let responseMsg = "";
+
+  // handle network error
+  if (status === 0 || status === 401) {
+    responseMsg = `Not Logged in! Click here to login.`;
+    setLoginStatus(responseMsg, "error");
+  }
+
+  if (status === 200) {
+    const { first_name, last_name } = responseData;
+    responseMsg = `Logged in as ${first_name} ${last_name}`;
+    setLoginStatus(responseMsg, "success");
+  }
 };
 
 const formatUserDefined = (userDefinedType) => (userDefinedType ? "No" : "Yes");
 
-const fetchItem = (itemId) => {
-  const token = getJwtToStorage();
+const fetchItem = async (itemId) => {
+  const token = getJwtFromStorage();
+  const getData = {};
 
-  return axios({
-    method: "get",
-    url: `http://127.0.0.1:8000/api/items/${itemId}`,
-    headers: {
-      Accept: "application/json",
-      "Access-Control-Allow-Origin": "*",
-      Authorization: `Bearer ${token}`,
-    },
-  })
-    .then((response) => {
-      let responseMsg = "";
-      if (response.status === 200) {
-        const { data } = response;
-        responseMsg = "Item fetched successfully";
-        setFetchStatus(responseMsg, "success");
-        const { data: item } = data;
-        return item;
-      }
-    })
-    .catch((error) => {
-      let responseMsg = "";
-      if (!error.response) {
-        // network error
-        responseMsg = "Error: Network Error";
-        setFetchStatus(responseMsg, "error");
-      }
-    });
+  const { status, responseData } = await ApiService.getApi(
+    `/items/${itemId}`,
+    getData,
+    token
+  );
+
+  let responseMsg = "";
+  if (status === 0) {
+    responseMsg = "Error: Network Error";
+    setFetchStatus(responseMsg, "error");
+  }
+
+  if (status === 401) {
+    responseMsg = "Unauthenticated user. Please log in";
+    setFetchStatus(responseMsg, "error");
+  }
+
+  if (status === 403) {
+    responseMsg = "Unauthorized user, access not allowed";
+    setFetchStatus(responseMsg, "error");
+    location.href = "login.html";
+  }
+
+  if (status === 200) {
+    const { data: items, message } = responseData;
+    setFetchStatus(message, "success");
+    return items;
+  }
 };
 
 const closeModal = () => {
@@ -215,7 +216,7 @@ const openModal = async (itemId, action) => {
   modalActionBtn.appendChild(btnTextNode);
 };
 
-const handleEditItem = (itemId) => {
+const handleEditItem = async (itemId) => {
   if (!itemId) return;
   // validate data
   const itemBarcode = editItemBarcodeInput.value;
@@ -227,72 +228,87 @@ const handleEditItem = (itemId) => {
   }
 
   const token = getJwtFromStorage();
-
   const postData = {
     barcode: itemBarcode,
     name: itemName,
   };
-
   modalActionBtn.setAttribute("disabled", true);
-  axios({
-    method: "put",
-    url: `http://127.0.0.1:8000/api/items/update/${itemId}`,
-    data: postData,
-    headers: {
-      Accept: "application/json",
-      "Access-Control-Allow-Origin": "*",
-      Authorization: `Bearer ${token}`,
-    },
-  })
-    .then((response) => {
-      //handle success
-      closeModal();
-      const { message } = response.data;
-      setFetchStatus(message, "success");
-      setTimeout(() => location.reload(), 1500);
-    })
-    .catch((error) => {
-      //handle error
-      let responseMsg = "";
-      if (!error.response) {
-        // network error
-        responseMsg = `Error: Network Error`;
-        setLoginStatus(responseMsg, "error");
-      }
-    });
+
+  const { status, responseData } = await ApiService.putApi(
+    `/items/update/${itemId}`,
+    postData,
+    token
+  );
+
+  let responseMsg = "";
+  if (status === 0) {
+    responseMsg = "Error: Network Error";
+    setFetchStatus(responseMsg, "error");
+  }
+
+  if (status === 401) {
+    responseMsg = "Unauthenticated user. Please log in";
+    setFetchStatus(responseMsg, "error");
+  }
+
+  if (status === 403) {
+    responseMsg = "Unauthorized user, access not allowed";
+    setFetchStatus(responseMsg, "error");
+    location.href = "login.html";
+  }
+
+  if (status === 200) {
+    const { data, message } = responseData;
+    closeModal();
+    setFetchStatus(message, "success");
+    setTimeout(() => location.reload(), 1500);
+  }
 };
 
-const handleVerifyItem = (itemId) => {
+const handleVerifyItem = async (itemId) => {
   if (!itemId) return;
+  // validate data
+  const itemBarcode = editItemBarcodeInput.value;
+  const itemName = editItemNameInput.value;
+
+  if (!itemBarcode || !itemName) {
+    setFetchStatus("Please fill in item name and barcode", "error");
+    return;
+  }
 
   const token = getJwtFromStorage();
-
+  const postData = {};
   modalActionBtn.setAttribute("disabled", true);
-  axios({
-    method: "put",
-    url: `http://127.0.0.1:8000/api/items/verify/${itemId}`,
-    headers: {
-      Accept: "application/json",
-      "Access-Control-Allow-Origin": "*",
-      Authorization: `Bearer ${token}`,
-    },
-  })
-    .then((response) => {
-      //handle success
-      closeModal();
-      const { message } = response.data;
-      setFetchStatus(message, "success");
-      setTimeout(() => location.reload(), 1500);
-    })
-    .catch((error) => {
-      //handle error
-      let responseMsg = "";
-      if (!error.response) {
-        // network error
-        responseMsg = `Error: Network Error`;
-        setLoginStatus(responseMsg, "error");
-      }
-    });
+
+  const { status, responseData } = await ApiService.putApi(
+    `/items/verify/${itemId}`,
+    postData,
+    token
+  );
+
+  let responseMsg = "";
+  if (status === 0) {
+    responseMsg = "Error: Network Error";
+    setFetchStatus(responseMsg, "error");
+  }
+
+  if (status === 401) {
+    responseMsg = "Unauthenticated user. Please log in";
+    setFetchStatus(responseMsg, "error");
+  }
+
+  if (status === 403) {
+    responseMsg = "Unauthorized user, access not allowed";
+    setFetchStatus(responseMsg, "error");
+    location.href = "login.html";
+  }
+
+  if (status === 200) {
+    const { data, message } = responseData;
+    closeModal();
+    setFetchStatus(message, "success");
+    setTimeout(() => location.reload(), 1500);
+  }
 };
 
 const renderEditBtn = (tableCell, itemId) => {
@@ -358,3 +374,7 @@ window.onclick = function (event) {
     closeModal();
   }
 };
+
+window.openModal = openModal;
+window.handleEditItem = handleEditItem;
+window.handleVerifyItem = handleVerifyItem;

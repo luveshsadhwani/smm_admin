@@ -1,9 +1,10 @@
+import ApiService from "./ApiService.js";
+
 const emailInput = document.getElementById("email");
 const passwordInput = document.getElementById("password");
 
 const btnEl = document.getElementById("submit-btn");
 const loginDiv = document.getElementById("login");
-const topBarDiv = document.getElementById("top-bar");
 
 const clearError = () => {
   const errEl = document.getElementsByClassName("err-container")[0];
@@ -77,39 +78,36 @@ const handleSubmit = async (e) => {
 
   const email = emailInput.value;
   const password = passwordInput.value;
-
   const isValid = validateInput();
+  const postData = { email, password };
 
   if (!isValid) {
     enableButtonEl(btnEl);
     return;
   }
 
-  const response = await axios({
-    method: "post",
-    url: "http://127.0.0.1:8000/api/login",
-    data: {
-      email,
-      password,
-    },
-    validateStatus: function (status) {
-      return status === 200 || status === 401; // default
-    },
-  });
+  const { status, responseData } = await ApiService.postApi(
+    "/login",
+    postData
+  );
 
-  const { status, data } = response;
-  // handle correct login
-  if (status === 200) {
-    const { token, name } = data.data;
-    saveJwtToStorage(token);
-
-    // redirect to item page html
-    location.href = "itempage.html";
+  // handle network error
+  if (status === 0) {
+    setError("Network Error");
   }
 
   // handle unauthenticated user
   if (status === 401) {
-    setError(data.message);
+    setError(responseData.message);
+  }
+
+  // handle correct login
+  if (status === 200) {
+    const { data } = responseData;
+    const { token } = data;
+    saveJwtToStorage(token);
+    // redirect to item page html
+    location.href = "itempage.html";
   }
 
   resetInput();

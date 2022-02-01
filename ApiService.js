@@ -1,4 +1,8 @@
-const API_URL = 'http://127.0.0.1:8000/api';
+const API_URL = "http://127.0.0.1:8000/api";
+
+const processedStatuses = (status) => {
+  return status === 200 || status === 401 || status === 403 || status === 422;
+};
 
 const postApi = (endpoint, postData = {}, token = "") => {
   let status = 0;
@@ -8,8 +12,11 @@ const postApi = (endpoint, postData = {}, token = "") => {
     method: "post",
     url: `${API_URL}${endpoint}`,
     data: postData,
-    validateStatus: function (status) {
-      return status === 200 || status === 401; // default
+    validateStatus: processedStatuses,
+    headers: {
+      Accept: "application/json",
+      "Access-Control-Allow-Origin": "*",
+      Authorization: `Bearer ${token}`,
     },
   })
     .then((response) => {
@@ -36,9 +43,7 @@ const getApi = (endpoint, getData = {}, token = "") => {
       Authorization: `Bearer ${token}`,
     },
     data: getData,
-    validateStatus: function (status) {
-      return status === 200 || status === 401; // default
-    },
+    validateStatus: processedStatuses,
   })
     .then((response) => {
       status = response.status;
@@ -64,9 +69,7 @@ const putApi = (endpoint, postData = {}, token = "") => {
       Authorization: `Bearer ${token}`,
     },
     data: postData,
-    validateStatus: function (status) {
-      return status === 200 || status === 401; // default
-    },
+    validateStatus: processedStatuses,
   })
     .then((response) => {
       status = response.status;

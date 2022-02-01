@@ -12,7 +12,16 @@
       <div id="modal-content" class="modal-content"></div>
     </div>
     <div class="top-bar" id="top-bar"><div>smm_admin</div></div>
-    <div class="page-title">SMM Item List</div>
+    <div class="page-title">
+      SMM Item List
+      <button
+        class="add-item-btn"
+        id="add-item-btn"
+        onclick="openModal(0, 'add')"
+      >
+        Add Item
+      </button>
+    </div>
     <div class="item-table">
       <table id="items-table">
         <tr>

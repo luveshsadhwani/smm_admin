@@ -1,6 +1,7 @@
 import ApiService from "./ApiService.js";
 
 const topBarDiv = document.getElementById("top-bar");
+const addItemBtn = document.getElementById("add-item-btn");
 const modal = document.getElementById("modal");
 const modalPopup = document.getElementById("modal-popup");
 const modalContent = document.getElementById("modal-content");
@@ -187,24 +188,30 @@ const closeModal = () => {
   modalActionBtn.textContent = "";
 };
 
-const openModal = async (itemId, action) => {
+const openModal = async (itemId = 0, action) => {
   modalPopup.style.display = "block";
-
-  // fetch item
-  const item = await fetchItem(itemId);
-  // display in the input
-  editItemBarcodeInput.value = item.barcode;
-  editItemNameInput.value = item.name;
 
   let btnTextNode = "";
   let titleTextNode = "";
   if (action === "edit") {
+    // fetch item
+    const item = await fetchItem(itemId);
+    // display in the input
+    editItemBarcodeInput.value = item.barcode;
+    editItemNameInput.value = item.name;
+
     titleTextNode = document.createTextNode("Edit Item");
     btnTextNode = document.createTextNode("Edit");
     modalActionBtn.setAttribute("onclick", `handleEditItem(${item.id})`);
   }
 
   if (action === "verify") {
+    // fetch item
+    const item = await fetchItem(itemId);
+    // display in the input
+    editItemBarcodeInput.value = item.barcode;
+    editItemNameInput.value = item.name;
+
     titleTextNode = document.createTextNode("Verify Item");
     btnTextNode = document.createTextNode("Verify");
     modalActionBtn.setAttribute("onclick", `handleVerifyItem(${item.id})`);
@@ -212,8 +219,69 @@ const openModal = async (itemId, action) => {
     editItemNameInput.setAttribute("disabled", true);
   }
 
+  if (action === "add") {
+    titleTextNode = document.createTextNode("Add Item");
+    btnTextNode = document.createTextNode("Add");
+    modalActionBtn.setAttribute("onclick", `handleAddItem()`);
+  }
+
   modalTitleEl.appendChild(titleTextNode);
   modalActionBtn.appendChild(btnTextNode);
+};
+
+const handleAddItem = async () => {
+  // validate data
+  const itemBarcode = editItemBarcodeInput.value;
+  const itemName = editItemNameInput.value;
+
+  if (!itemBarcode || !itemName) {
+    setFetchStatus("Please fill in item name and barcode", "error");
+    return;
+  }
+
+  const token = getJwtFromStorage();
+  const postData = {
+    barcode: itemBarcode,
+    name: itemName,
+  };
+
+  modalActionBtn.setAttribute("disabled", true);
+
+  const { status, responseData } = await ApiService.postApi(
+    `/items/create`,
+    postData,
+    token
+  );
+
+  let responseMsg = "";
+  if (status === 0) {
+    responseMsg = "Error: Network Error";
+    setFetchStatus(responseMsg, "error");
+  }
+
+  if (status === 401) {
+    responseMsg = "Unauthenticated user. Please log in";
+    setFetchStatus(responseMsg, "error");
+  }
+
+  if (status === 403) {
+    responseMsg = "Unauthorized user, access not allowed";
+    setFetchStatus(responseMsg, "error");
+    location.href = "login.html";
+  }
+
+  if (status === 422) {
+    const { message } = responseData;
+    closeModal();
+    setFetchStatus(message, "error");
+  }
+
+  if (status === 200) {
+    const { data, message } = responseData;
+    closeModal();
+    setFetchStatus(message, "success");
+    setTimeout(() => location.reload(), 1500);
+  }
 };
 
 const handleEditItem = async (itemId) => {
@@ -378,3 +446,4 @@ window.onclick = function (event) {
 window.openModal = openModal;
 window.handleEditItem = handleEditItem;
 window.handleVerifyItem = handleVerifyItem;
+window.handleAddItem = handleAddItem;
